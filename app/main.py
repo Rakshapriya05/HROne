@@ -74,23 +74,46 @@ def ensure_indexes(database=None) -> None:
     """Create every index the endpoints rely on. Safe to run on every start."""
     database = database if database is not None else db
     specs = [
-        ("employees", [("emp_code", ASCENDING)], {"unique": True, "name": "uniq_emp_code"}),
-        # department filter + R9 headcount (joined_on <= end of period)
-        ("employees", [("department", ASCENDING), ("joined_on", ASCENDING)], {"name": "dept_joined"}),
-        ("employees", [("joined_on", ASCENDING)], {"name": "joined"}),
-        # one record per employee per day; also the punch-in race guard
-        ("attendance_logs", [("emp_code", ASCENDING), ("date", ASCENDING)], {"unique": True, "name": "uniq_emp_date"}),
-        # GET /attendance default sort, plus date-range scans for analytics
-        ("attendance_logs", [("date", DESCENDING), ("emp_code", ASCENDING)], {"name": "date_desc_emp"}),
-        # GET /attendance?status=...
-        (
-            "attendance_logs",
-            [("status", ASCENDING), ("date", DESCENDING), ("emp_code", ASCENDING)],
-            {"name": "status_date_emp"},
-        ),
-        # punch-out: latest record of an employee at or before a time
-        ("attendance_logs", [("emp_code", ASCENDING), ("punch_in", DESCENDING)], {"name": "emp_punch_in"}),
-    ]
+    (
+        "employees",
+        [("emp_code", ASCENDING)],
+        {"unique": True, "name": "uq_employee_emp_code"},
+    ),
+    (
+        "employees",
+        [("department", ASCENDING), ("joined_on", ASCENDING)],
+        {"name": "ix_employee_department_joined"},
+    ),
+    (
+        "employees",
+        [("joined_on", ASCENDING)],
+        {"name": "joined"},
+    ),
+    (
+        "attendance_logs",
+        [("emp_code", ASCENDING), ("date", ASCENDING)],
+        {"unique": True, "name": "uq_attendance_employee_date"},
+    ),
+    (
+        "attendance_logs",
+        [("date", DESCENDING), ("emp_code", ASCENDING)],
+        {"name": "ix_attendance_date_employee"},
+    ),
+    (
+        "attendance_logs",
+        [
+            ("status", ASCENDING),
+            ("date", DESCENDING),
+            ("emp_code", ASCENDING),
+        ],
+        {"name": "ix_attendance_status_date_employee"},
+    ),
+    (
+        "attendance_logs",
+        [("emp_code", ASCENDING), ("punch_in", DESCENDING)],
+        {"name": "ix_attendance_employee_punch_in"},
+    ),
+]
     for collection, keys, options in specs:
         try:
             database[collection].create_index(keys, **options)
