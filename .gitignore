@@ -1,0 +1,29 @@
+# environments and secrets
+.venv/
+venv/
+env/
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# tests / coverage
+.coverage
+htmlcov/
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# data dumps
+*.bson
+*.dump
